@@ -1,0 +1,15 @@
+Javascript Cookie Manager
+Stephen B Melvin Jr 2012
+--
+
+Usage:
+
+If you wanted to set the cookie: user_age = 3;
+
+CookieManager.setValue("user_age","3");
+
+To retrieve that cookie's value:
+
+CookieManager.getValue("user_age");
+
+
