@@ -1,6 +1,7 @@
 // CookieManager - Stephen Melvin 2012
 // Sets/Gets cookie values
-var CookieManager = (function() {
+
+var CM = (function() {
 
     return {
         // Sets a cookie where name = value;
@@ -14,25 +15,26 @@ var CookieManager = (function() {
         // otherwise getValue returns false.
         getValue: function(name) {
             var cookies = document.cookie;
-            if (cookies === "") {
+
+            if (cookies.length === 0) {
                 return false;
             }
 
             var list = cookies.split("; ");
-            var i;
-            for (i = 0; i < list.length; i++) {
+
+            for (var i = 0; i < list.length; i++) {
                 var cookie = list[i];
                 var p = cookie.indexOf("=");
+
                 var cookiename = cookie.substring(0, p);
                 var cookievalue = cookie.substring(p + 1);
+
                 // Check if str1 is inside str2
                 if (cookiename == cookiename.match(name)) {
                     return decodeURIComponent(cookievalue);
                 }
             }
-
             return false;
         }
     };
-
 })();
