@@ -1,40 +1,60 @@
-// CookieManager - Stephen Melvin 2012
-// Sets/Gets cookie values
+// A much better cookie manager I found at https://developer.mozilla.org/en-US/docs/Web/API/document.cookie
 
-var CM = (function() {
+/*\
+|*|
+|*|  :: cookies.js ::
+|*|
+|*|  A complete cookies reader/writer framework with full unicode support.
+|*|
+|*|  https://developer.mozilla.org/en-US/docs/DOM/document.cookie
+|*|
+|*|  This framework is released under the GNU Public License, version 3 or later.
+|*|  http://www.gnu.org/licenses/gpl-3.0-standalone.html
+|*|
+|*|  Syntaxes:
+|*|
+|*|  * docCookies.setItem(name, value[, end[, path[, domain[, secure]]]])
+|*|  * docCookies.getItem(name)
+|*|  * docCookies.removeItem(name[, path], domain)
+|*|  * docCookies.hasItem(name)
+|*|  * docCookies.keys()
+|*|
+\*/
 
-    return {
-        // Sets a cookie where name = value;
-        setValue: function(name, value) {
-            document.cookie = name + "=" + encodeURIComponent(value);
-        },
-
-        // Retrieves the value of cookie 'name'.
-        // Returns:
-        // On Success getValue returns the value of the cookie requested,
-        // otherwise getValue returns false.
-        getValue: function(name) {
-            var cookies = document.cookie;
-
-            if (cookies.length === 0) {
-                return false;
-            }
-
-            var list = cookies.split("; ");
-
-            for (var i = 0; i < list.length; i++) {
-                var cookie = list[i];
-                var p = cookie.indexOf("=");
-
-                var cookiename = cookie.substring(0, p);
-                var cookievalue = cookie.substring(p + 1);
-
-                // Check if str1 is inside str2
-                if (cookiename == cookiename.match(name)) {
-                    return decodeURIComponent(cookievalue);
-                }
-            }
-            return false;
-        }
-    };
-})();
+var docCookies = {
+  getItem: function (sKey) {
+    return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
+  },
+  setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+    if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
+    var sExpires = "";
+    if (vEnd) {
+      switch (vEnd.constructor) {
+        case Number:
+          sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
+          break;
+        case String:
+          sExpires = "; expires=" + vEnd;
+          break;
+        case Date:
+          sExpires = "; expires=" + vEnd.toUTCString();
+          break;
+      }
+    }
+    document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+    return true;
+  },
+  removeItem: function (sKey, sPath, sDomain) {
+    if (!sKey || !this.hasItem(sKey)) { return false; }
+    document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + ( sDomain ? "; domain=" + sDomain : "") + ( sPath ? "; path=" + sPath : "");
+    return true;
+  },
+  hasItem: function (sKey) {
+    return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie);
+  },
+  keys: function () {
+    var aKeys = document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
+    for (var nIdx = 0; nIdx < aKeys.length; nIdx++) { aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]); }
+    return aKeys;
+  }
+};
